@@ -1,0 +1,133 @@
+----------------------------------------------------------------------------------------------------
+Revision 0
+Original revision
+----------------------------------------------------------------------------------------------------
+Manifest:
+    FLASH
+    Project_Headers
+        global.h
+        libcse325.h
+        mkl46z.h
+    Project_Settings
+        Linker_Files
+             MKL46Z256_flash.ld
+        Startup_Code
+             bare_asm_startup.s
+             bare_startup.c
+             bare_startup.h
+    Sources
+         global.c
+         libcse325.c
+         main.c
+
+----------------------------------------------------------------------------------------------------
+Revision 1 - 18 Sep 2015
+Changes:
+1.  Created new project folder Project_Settings/CSE325_Lib.
+
+2.  Moved Sources/libcse325.c to Project_Settings/CSE325_Lib/libcse325.c
+
+3.  Added Project_Settings/CSE325_Lib/signed_int_div.s. This file contains an assembly language
+    function __aeabi_idiv(int num:r0, int den:r1) which will perform num/den. (Note: the ARM
+    Cortex-M0+ instruction set does not include divide instructions). The compiler will automatically
+    generate a call to __aeabi_idiv() whenever a divide operator is used to two divided two signed
+    ints.
+   
+4.  Added Project_Settings/CSE325_Lib/signed_int_mod.s. This file contains an assembly language
+    function __aeabi_idivmod(int num:r0, int den:r1) which will perform num % den (it also performs
+    num / den because in order to obtain the mod of num and den, num and den must be divided). The
+    compiler will automatically generate a call to __aeabi_idivmod() whenever a mod operator is used
+    on two signed ints.
+   
+5.  Added Project_Settings/CSE325_Lib/unsigned_int_div.s. This file contains an assembly language
+    function __aeabi_uidivmod(unsigned num:r0, unsigned den:r1) which will perform num/div and
+    num % div on unsigned ints. The compiler will automatically generate a call to __aeabi_uidivmod()
+    whenever a divide or mod operator is used on two unsigned ints.
+    
+6.  global.c - Added global variable definitions for the frequencies of various clocks.
+
+    uint32_t global_bus_clock_freq_mhz;
+    uint32_t global_core_clock_freq_mhz;
+    uint32_t global_flash_clock_freq_mhz;
+    uint32_t global_mcgirclk_freq_mhz;
+    uint32_t global_platform_clock_freq_mhz;
+    uint32_t global_oscerclk_freq_mhz;
+    uint32_t global_system_clock_freq_mhz;
+ 
+7.  global.h - Added global variable declarations for the new global variables defined in global.c.
+
+8.  bare_startup_c - Added new function bare_clocks_init() to configure the Core, Platform, System
+    clock frequencies to 48 MHz and the bus and flash clock frequencies to 24 MHz. MCGIRCLK will
+    now be the 4 MHz fast internal reference clock. OSCERCLK will be the 8 MHz OSCCLK. Added new
+    function bare_clkout_init() which will output the Bus clock on the microcontroller CLKOUT pin
+    when CLOCKOUT_ENABLE is defined during compilation.
+   
+9.  Modified bare_sp_init() in bare_asm_startup.s to use LDR R1, dead_beef instruction to load the
+    value into R1.
+
+10. Modified bare_startup() in bare_asm_startup.s so the infinite loop branches to a numeric loca;
+    label.
+   
+References
+1. https://github.com/bobbl/libaeabi-cortexm0 (division source code)
+----------------------------------------------------------------------------------------------------
+Manifest:
+    FLASH
+    Project_Headers
+        global.h
+        libcse325.h
+        mkl46z.h
+    Project_Settings
+        CSE325_Lib
+             libcse325.c
+             signed_int_div.s
+             signed_int_mod.s
+             unsigned_int_div.s
+        Linker_Files
+             MKL46Z256_flash.ld
+        Startup_Code
+             bare_asm_startup.s
+             bare_startup.c
+             bare_startup.h
+    Sources
+         global.c
+         main.c
+
+----------------------------------------------------------------------------------------------------
+Revision 2 - 12 Oct 2015
+Changes:
+1. Added bool_t enumerated type and various callback_t types to global.h.
+
+2. Added missing #include "global.h" to libcse325.h. Added #include "libcse325.h" to libcse325.c.
+
+3. Added bare_hardfault_isr() to bare_startup.c. A HardFault exception will now redirect to this
+   function rather than bare_default_isr(). This will make it easier to recognize when a HardFault
+   exception is occurring.
+
+4. Added int module (files int.c and int.h) for configuring interrupts.
+
+5. Found typos in the names of tpm1_isr and tpm2_isr in the bare_vector_table[] array.
+----------------------------------------------------------------------------------------------------
+Manifest:
+    FLASH
+    Project_Headers
+        global.h
+        int.h
+        libcse325.h
+        mkl46z.h
+    Project_Settings
+        CSE325_Lib
+             libcse325.c
+             signed_int_div.s
+             signed_int_mod.s
+             unsigned_int_div.s
+        Linker_Files
+             MKL46Z256_flash.ld
+        Startup_Code
+             bare_asm_startup.s
+             bare_startup.c
+             bare_startup.h
+    Sources
+         global.c
+         int.c
+         main.c
